@@ -6,6 +6,72 @@ class GalleryShooter extends Phaser.Scene {
         super('GalleryShooter');
     }
 
+    // Helper functions
+
+    // Spawn a croc
+    spawnCroc() {
+        let x = Phaser.Math.Between(200, 600);
+        let croc = this.add.sprite(x, 580, 'croc').setScale(0.3);
+        croc.angle = -90;
+
+        croc.hitCount = 0;
+        croc.direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+        croc.speed = Phaser.Math.Between(1, 3);
+
+        this.crocs.add(croc);
+    }
+
+    // Spawn spit projectiles
+    spawnSpit(x, y, isSuper = false) {
+        let spit = this.add.sprite(x, y - 20, 'spit').setScale(isSuper ? 1 : 0.6);
+        this.spits.add(spit);
+        spit.isSuper = isSuper;
+    }
+
+    // Spawn a super croc
+    spawnSuperCroc() {
+        let x = Phaser.Math.Between(200, 600);
+        let croc = this.add.sprite(x, 580, 'croc').setScale(0.45); // Bigger croc
+        croc.angle = -90;
+    
+        croc.isSuper = true;
+        croc.hitCount = 0;
+        croc.direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+        croc.speed = Phaser.Math.Between(1, 2);
+    
+        this.crocs.add(croc);
+    }
+
+    // End game function
+    endGame() {
+        // Save high score
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+            savedHighScore = this.highScore;
+        }
+
+        this.isGameOver = true;
+    
+        // Stop spawning crocs
+        if (this.spawnTimer) this.spawnTimer.remove();
+    
+        // Clear remaining enemies and poop/spit
+        this.crocs.clear(true, true);
+        this.poops.clear(true, true);
+        this.spits.clear(true, true);
+    
+        // Update high score
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+        }
+    
+        // Show game over text
+        this.add.text(300, 250, 'Game Overrrrr', { fontSize: '32px', fill: '#fff' });
+        this.add.text(260, 300, `Final Score: ${this.score}`, { fontSize: '24px', fill: '#fff' });
+        this.add.text(260, 330, `High Score: ${this.highScore}`, { fontSize: '20px', fill: '#fff' });
+        this.add.text(210, 380, 'Press SPACE to restart', { fontSize: '20px', fill: '#ccc' });
+    }
+
     preload() {
         // Load player and projectile assets
         this.load.image('river-left', 'assets/river_left.png');
@@ -22,7 +88,7 @@ class GalleryShooter extends Phaser.Scene {
     }
 
     create() {
-        const tileWidth = 100;
+        // Constants
         const screenHeight = 600;
         this.highScore = savedHighScore;
         
@@ -41,26 +107,10 @@ class GalleryShooter extends Phaser.Scene {
         // Right grass (48px wide)
         this.rightGrass = this.add.tileSprite(776, 300, 48, screenHeight, 'grass');
 
-        // Random flowers and planes on grass
-        // for (let i = 0; i < 5; i++) {
-        //     let flowerLeft = this.add.image(Phaser.Math.Between(0, 48), Phaser.Math.Between(0, 600), 'flower').setScale(0.5);
-        //     let flowerRight = this.add.image(Phaser.Math.Between(752, 800), Phaser.Math.Between(0, 600), 'flower').setScale(0.5);
-        // }
-        // for (let i = 0; i < 2; i++) {
-        //     let plane = this.add.image(Phaser.Math.Between(752, 800), Phaser.Math.Between(0, 600), 'plane').setScale(0.4);
-        // }
-
-
         // Add player (duck)
         this.duck = this.add.sprite(400, 200, 'duck');
         this.duck.setDisplaySize(64, 48);
         this.children.bringToTop(this.duck);
-        //this.add.rectangle(400, 500, 64, 48).setStrokeStyle(2, 0xffff00);
-        //console.log(`duck: (${this.duck.x}, ${this.duck.y})`);
-
-
-
-
 
         // Controls
         this.keys = this.input.keyboard.addKeys({
@@ -120,68 +170,6 @@ class GalleryShooter extends Phaser.Scene {
         // Restart
         this.isGameOver = false;
         this.highScore = 0;
-    }
-
-    // Helper functions
-    spawnCroc() {
-        let x = Phaser.Math.Between(200, 600);
-        let croc = this.add.sprite(x, 580, 'croc').setScale(0.3);
-        croc.angle = -90;
-
-        // Add horizontal wiggle direction and speed
-        croc.hitCount = 0;
-        croc.direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-        croc.speed = Phaser.Math.Between(1, 3);
-
-        this.crocs.add(croc);
-    }
-
-    spawnSpit(x, y, isSuper = false) {
-        let spit = this.add.sprite(x, y - 20, 'spit').setScale(isSuper ? 1 : 0.6);
-        this.spits.add(spit);
-        spit.isSuper = isSuper;
-    }
-
-    spawnSuperCroc() {
-        let x = Phaser.Math.Between(200, 600);
-        let croc = this.add.sprite(x, 580, 'croc').setScale(0.45); // Bigger croc
-        croc.angle = -90;
-    
-        croc.isSuper = true;
-        croc.hitCount = 0;
-        croc.direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-        croc.speed = Phaser.Math.Between(1, 2);
-    
-        this.crocs.add(croc);
-    }
-
-    endGame() {
-        // Save high score
-        if (this.score > this.highScore) {
-            this.highScore = this.score;
-            savedHighScore = this.highScore;
-        }
-
-        this.isGameOver = true;
-    
-        // Stop spawning crocs
-        if (this.spawnTimer) this.spawnTimer.remove();
-    
-        // Clear remaining enemies and poop/spit
-        this.crocs.clear(true, true);
-        this.poops.clear(true, true);
-        this.spits.clear(true, true);
-    
-        // Update high score
-        if (this.score > this.highScore) {
-            this.highScore = this.score;
-        }
-    
-        // Show game over text
-        this.add.text(300, 250, 'Game Overrrrr', { fontSize: '32px', fill: '#fff' });
-        this.add.text(260, 300, `Final Score: ${this.score}`, { fontSize: '24px', fill: '#fff' });
-        this.add.text(260, 330, `High Score: ${this.highScore}`, { fontSize: '20px', fill: '#fff' });
-        this.add.text(210, 380, 'Press SPACE to restart', { fontSize: '20px', fill: '#ccc' });
     }
 
     update() {
